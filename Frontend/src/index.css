@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+    --color-twitter-black: #000000;
+    --color-twitter-dark-gray: #16181c;
+    --color-twitter-blue: #1d9bf0;
+    --color-twitter-gray: #71767b;
+    --color-twitter-border: #2f3336;
+}
+
+body {
+    background-color: black;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+        Arial, sans-serif;
+}
