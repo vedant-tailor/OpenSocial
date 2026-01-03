@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,15 +10,31 @@ const Auth = () => {
       email: "",
       password: ""
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
       setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
       e.preventDefault();
-      console.log("Submitting:", formData);
-      // TODO: Connect to backend
+      
+      const { username, email, password } = formData;
+      const endpoint = isLogin ? "/login" : "/register";
+      const payload = isLogin ? { email, password } : { username, email, password };
+
+      try {
+        const res = await axios.post(`http://localhost:8000/api/auth${endpoint}`, payload);
+        
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data));
+        
+        toast.success(isLogin ? "Logged in successfully!" : "Account created successfully!");
+        navigate("/");
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Something went wrong");
+        console.error("Auth Error:", error);
+      }
   };
 
   return (
