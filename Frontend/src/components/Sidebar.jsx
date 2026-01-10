@@ -3,12 +3,18 @@ import { Link } from "react-router-dom";
 import { Home, User, LogOut, LogIn, PenSquare } from "lucide-react";
 
 const Sidebar = () => {
-  // TODO: Get auth state
-  const isAuthenticated = false; 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAuthenticated = !!user;
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "/auth";
+  };
 
   const navItems = [
     { icon: <Home size={28} />, text: "Home", path: "/" },
-    { icon: <User size={28} />, text: "Profile", path: "/profile" },
+    { icon: <User size={28} />, text: "Profile", path: `/profile/${user?.username || "me"}` },
   ];
 
   return (
@@ -40,7 +46,10 @@ const Sidebar = () => {
             <span className="hidden xl:block text-xl font-medium">Sign In</span>
           </Link>
         ) : (
-          <button className="flex items-center gap-4 px-3 xl:px-4 py-3 rounded-full hover:bg-twitter-dark-gray transition-colors w-fit text-left">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-4 px-3 xl:px-4 py-3 rounded-full hover:bg-twitter-dark-gray transition-colors w-fit text-left"
+          >
             <LogOut size={28} />
             <span className="hidden xl:block text-xl font-medium">Logout</span>
           </button>
@@ -55,10 +64,12 @@ const Sidebar = () => {
       {/* User Profile (Bottom) */}
       {isAuthenticated && (
         <div className="mt-auto flex items-center justify-center xl:justify-start gap-3 p-3 rounded-full hover:bg-twitter-dark-gray cursor-pointer transition-colors">
-            <div className="w-10 h-10 rounded-full bg-gray-600"></div>
+            <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
+                {user.profileImg && <img src={user.profileImg} alt="Avatar" className="w-full h-full object-cover" />}
+            </div>
             <div className="hidden xl:block">
-                <p className="font-bold">Username</p>
-                <p className="text-twitter-gray text-sm">@handle</p>
+                <p className="font-bold">{user.username}</p>
+                <p className="text-twitter-gray text-sm">@{user.username}</p>
             </div>
         </div>
       )}

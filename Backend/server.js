@@ -30,6 +30,7 @@ if (!mongoURI) {
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/users", require("./routes/user"));
 app.use("/api/posts", require("./routes/posts"));
 
 app.get("/", (req, res) => {
