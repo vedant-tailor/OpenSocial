@@ -16,6 +16,7 @@ const Profile = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [feedType, setFeedType] = useState("posts");
 
   useEffect(() => {
     const fetchUserAndPosts = async () => {
@@ -35,12 +36,9 @@ const Profile = () => {
             setIsFollowing(false);
         }
 
-        // Fetch posts (filtering locally for now as api/posts returns all, 
-        // ideally backend should have /api/posts?user=id or similar, but this works for scale < 100 posts)
-        // Optimization: In a real app we would create a specific endpoint.
+        // Fetch all posts to allow filtering for Likes/Replies
         const postsRes = await axios.get("http://localhost:8000/api/posts");
-        const userPosts = postsRes.data.filter(post => post.user._id === userRes.data._id);
-        setPosts(userPosts);
+        setPosts(postsRes.data);
 
       } catch (error) {
         console.error(error);
@@ -159,10 +157,42 @@ const Profile = () => {
       }
   };
 
+  const handleComment = async (id, text) => {
+      try {
+          const token = localStorage.getItem("token");
+          const res = await axios.post(
+              `http://localhost:8000/api/posts/comment/${id}`,
+              { text },
+              { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          setPosts(posts.map(post => post._id === id ? res.data : post));
+          toast.success("Reply sent");
+      } catch (error) {
+          console.error(error);
+          toast.error("Failed to send reply");
+      }
+  };
+
   if (loading) return <div className="text-white text-center mt-10">Loading...</div>;
   if (!user) return null;
 
   const isMyProfile = currentUser && currentUser.username === user.username;
+
+  const getPosts = () => {
+    switch (feedType) {
+        case "posts":
+            return posts.filter(post => post.user._id === user._id);
+        case "replies":
+            return posts.filter(post => 
+                post.comments.some(comment => comment.postedBy._id === user._id)
+            );
+        case "likes":
+            return posts.filter(post => post.likes.includes(user._id));
+        default:
+            return posts.filter(post => post.user._id === user._id);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen text-white border-x border-gray-800">
@@ -173,7 +203,9 @@ const Profile = () => {
         </button>
         <div>
             <h2 className="font-bold text-xl">{user.username}</h2>
-            <p className="text-gray-500 text-sm">{posts.length} posts</p>
+            <p className="text-gray-500 text-sm">
+                {posts.filter(post => post.user._id === user._id).length} posts
+            </p>
         </div>
       </div>
 
@@ -246,27 +278,49 @@ const Profile = () => {
         
         {/* Tabs */}
         <div className="flex border-b border-gray-800 mt-4">
-            <div className="flex-1 text-center py-3 font-bold hover:bg-gray-900 cursor-pointer relative">
+            <div 
+                className={`flex-1 text-center py-3 cursor-pointer relative ${feedType === "posts" ? "font-bold text-white" : "text-gray-500 hover:bg-gray-900"}`}
+                onClick={() => setFeedType("posts")}
+            >
                 Posts
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-full"></div>
+                {feedType === "posts" && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-full"></div>
+                )}
             </div>
-            <div className="flex-1 text-center py-3 text-gray-500 hover:bg-gray-900 cursor-pointer">Replies</div>
-            <div className="flex-1 text-center py-3 text-gray-500 hover:bg-gray-900 cursor-pointer">Likes</div>
+            <div 
+                className={`flex-1 text-center py-3 cursor-pointer relative ${feedType === "replies" ? "font-bold text-white" : "text-gray-500 hover:bg-gray-900"}`}
+                onClick={() => setFeedType("replies")}
+            >
+                Replies
+                {feedType === "replies" && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-full"></div>
+                )}
+            </div>
+            <div 
+                className={`flex-1 text-center py-3 cursor-pointer relative ${feedType === "likes" ? "font-bold text-white" : "text-gray-500 hover:bg-gray-900"}`}
+                onClick={() => setFeedType("likes")}
+            >
+                Likes
+                {feedType === "likes" && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-blue-500 rounded-full"></div>
+                )}
+            </div>
         </div>
 
         {/* Content */}
         <div>
-            {posts.length === 0 ? (
+            {getPosts().length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                     No posts yet.
                 </div>
             ) : (
-                posts.map(post => (
+                getPosts().map(post => (
                     <Post 
                         key={post._id} 
                         post={post}
                         onLike={handleLikePost}
                         onDelete={handleDeletePost}
+                        onComment={handleComment}
                     />
                 ))
             )}

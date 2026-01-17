@@ -3,6 +3,12 @@ const router = express.Router();
 const Post = require("../models/Post");
 const User = require("../models/User");
 const { protect } = require("../middleware/authMiddleware");
+const cloudinary = require("../lib/cloudinary");
+const multer = require("multer");
+
+// Multer setup for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // @route   GET /api/posts
 // @desc    Get all posts
@@ -11,6 +17,7 @@ router.get("/", async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username profileImg")
+      .populate("comments.postedBy", "username profileImg")
       .sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (error) {
@@ -21,14 +28,32 @@ router.get("/", async (req, res) => {
 // @route   POST /api/posts
 // @desc    Create a post
 // @access  Private
-router.post("/", protect, async (req, res) => {
-  const { text, image } = req.body;
-
-  if (!text && !image) {
-    return res.status(400).json({ message: "Post must have text or image" });
-  }
-
+router.post("/", protect, upload.single("image"), async (req, res) => {
   try {
+    const { text } = req.body;
+    let image = req.body.image; // Allow URL if passed directly (though mostly file now)
+
+    if (!text && !req.file && !image) {
+      return res.status(400).json({ message: "Post must have text or image" });
+    }
+
+    if (req.file) {
+        const uploadToCloudinary = (buffer) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: "image" },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(buffer);
+            });
+        };
+        const result = await uploadToCloudinary(req.file.buffer);
+        image = result.secure_url;
+    }
+
     const post = await Post.create({
       user: req.user.id,
       text,
@@ -42,6 +67,7 @@ router.post("/", protect, async (req, res) => {
 
     res.status(200).json(populatedPost);
   } catch (error) {
+    console.error("Error in create post:", error);
     res.status(500).json({ message: "Server Error" });
   }
 });
