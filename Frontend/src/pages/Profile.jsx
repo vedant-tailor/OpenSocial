@@ -4,20 +4,44 @@ import axios from "axios";
 import { Calendar, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
 import EditProfileModal from "../components/EditProfileModal";
+import Post from "../components/Post";
 
 const Profile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndPosts = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/api/users/profile/${username}`);
-        setUser(res.data);
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        setCurrentUser(storedUser);
+
+        // Fetch user profile
+        const userRes = await axios.get(`http://localhost:8000/api/users/profile/${username}`);
+        setUser(userRes.data);
+        setFollowersCount(userRes.data.followers.length);
+
+        // Check if current user is following
+        if (storedUser && userRes.data.followers.includes(storedUser._id)) {
+            setIsFollowing(true);
+        } else {
+            setIsFollowing(false);
+        }
+
+        // Fetch posts (filtering locally for now as api/posts returns all, 
+        // ideally backend should have /api/posts?user=id or similar, but this works for scale < 100 posts)
+        // Optimization: In a real app we would create a specific endpoint.
+        const postsRes = await axios.get("http://localhost:8000/api/posts");
+        const userPosts = postsRes.data.filter(post => post.user._id === userRes.data._id);
+        setPosts(userPosts);
+
       } catch (error) {
         console.error(error);
         toast.error("User not found");
@@ -26,12 +50,33 @@ const Profile = () => {
         setLoading(false);
       }
     };
-
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    setCurrentUser(storedUser);
     
-    fetchUser();
+    fetchUserAndPosts();
   }, [username, navigate]);
+
+  const handleFollow = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        if (isFollowing) {
+            await axios.post(`http://localhost:8000/api/users/unfollow/${user._id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsFollowing(false);
+            setFollowersCount(prev => prev - 1);
+            toast.success("Unfollowed");
+        } else {
+            await axios.post(`http://localhost:8000/api/users/follow/${user._id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsFollowing(true);
+            setFollowersCount(prev => prev + 1);
+            toast.success("Followed");
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("Failed to update follow status");
+    }
+  };
 
   const handleUpdateProfile = async (updatedData) => {
     try {
@@ -58,9 +103,11 @@ const Profile = () => {
       
       setUser({ ...user, ...res.data });
       // Update local storage if it's the current user
-      const updatedCurrentUser = { ...currentUser, ...res.data };
-      localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
-      setCurrentUser(updatedCurrentUser);
+      if (currentUser._id === user._id) {
+        const updatedCurrentUser = { ...currentUser, ...res.data };
+        localStorage.setItem("user", JSON.stringify(updatedCurrentUser));
+        setCurrentUser(updatedCurrentUser);
+      }
       
       setIsEditModalOpen(false);
       toast.success("Profile updated!");
@@ -68,6 +115,48 @@ const Profile = () => {
       console.error(error);
       toast.error("Failed to update profile");
     }
+  };
+
+  const handleDeletePost = async (id) => {
+      try {
+          const token = localStorage.getItem("token");
+          await axios.delete(`http://localhost:8000/api/posts/${id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+          });
+          setPosts(posts.filter((post) => post._id !== id));
+          toast.success("Post deleted");
+      } catch (error) {
+          console.error(error);
+          toast.error("Failed to delete post");
+      }
+  };
+
+  const handleLikePost = async (id) => {
+      try {
+          const token = localStorage.getItem("token");
+          await axios.put(
+              `http://localhost:8000/api/posts/like/${id}`,
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+          );
+          
+          setPosts(posts.map(post => {
+              if (post._id === id) {
+                  const isPostLiked = post.likes.includes(currentUser._id);
+                  return {
+                      ...post,
+                      likes: isPostLiked 
+                          ? post.likes.filter(uid => uid !== currentUser._id)
+                          : [...post.likes, currentUser._id]
+                  };
+              }
+              return post;
+          }));
+
+      } catch (error) {
+          console.error(error);
+          toast.error("Failed to like post");
+      }
   };
 
   if (loading) return <div className="text-white text-center mt-10">Loading...</div>;
@@ -84,7 +173,7 @@ const Profile = () => {
         </button>
         <div>
             <h2 className="font-bold text-xl">{user.username}</h2>
-            <p className="text-gray-500 text-sm">0 posts</p>
+            <p className="text-gray-500 text-sm">{posts.length} posts</p>
         </div>
       </div>
 
@@ -124,8 +213,15 @@ const Profile = () => {
                         Edit profile
                     </button>
                 ) : (
-                    <button className="bg-white text-black font-bold px-4 py-1.5 rounded-full hover:bg-gray-200 transition-colors">
-                        Follow
+                    <button 
+                        onClick={handleFollow}
+                        className={`font-bold px-4 py-1.5 rounded-full transition-colors ${
+                            isFollowing 
+                                ? "bg-transparent border border-gray-600 text-white hover:bg-red-500/10 hover:border-red-600 hover:text-red-500" 
+                                : "bg-white text-black hover:bg-gray-200"
+                        }`}
+                    >
+                        {isFollowing ? "Unfollow" : "Follow"}
                     </button>
                 )}
             </div>
@@ -142,8 +238,8 @@ const Profile = () => {
                 </div>
 
                 <div className="flex gap-4 mt-3 text-sm">
-                    <span className="text-white font-bold">0 <span className="text-gray-500 font-normal">Following</span></span>
-                    <span className="text-white font-bold">0 <span className="text-gray-500 font-normal">Followers</span></span>
+                    <span className="text-white font-bold">{user.following.length} <span className="text-gray-500 font-normal">Following</span></span>
+                    <span className="text-white font-bold">{followersCount} <span className="text-gray-500 font-normal">Followers</span></span>
                 </div>
             </div>
         </div>
@@ -158,9 +254,22 @@ const Profile = () => {
             <div className="flex-1 text-center py-3 text-gray-500 hover:bg-gray-900 cursor-pointer">Likes</div>
         </div>
 
-        {/* Content Placeholder */}
-        <div className="p-4 text-center text-gray-500">
-            No posts yet.
+        {/* Content */}
+        <div>
+            {posts.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                    No posts yet.
+                </div>
+            ) : (
+                posts.map(post => (
+                    <Post 
+                        key={post._id} 
+                        post={post}
+                        onLike={handleLikePost}
+                        onDelete={handleDeletePost}
+                    />
+                ))
+            )}
         </div>
       </div>
 

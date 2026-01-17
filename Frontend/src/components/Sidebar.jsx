@@ -64,8 +64,12 @@ const Sidebar = () => {
       {/* User Profile (Bottom) */}
       {isAuthenticated && (
         <div className="mt-auto flex items-center justify-center xl:justify-start gap-3 p-3 rounded-full hover:bg-twitter-dark-gray cursor-pointer transition-colors">
-            <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
-                {user.profileImg && <img src={user.profileImg} alt="Avatar" className="w-full h-full object-cover" />}
+            <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-white">
+                {user.profileImg ? (
+                    <img src={user.profileImg} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                    user.username[0].toUpperCase()
+                )}
             </div>
             <div className="hidden xl:block">
                 <p className="font-bold">{user.username}</p>
