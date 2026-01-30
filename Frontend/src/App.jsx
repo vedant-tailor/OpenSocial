@@ -10,19 +10,19 @@ function Layout({ children }) {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
 
+  if (isAuthPage) return children;
+
   return (
-    <div className="flex max-w-7xl mx-auto">
-      {!isAuthPage && <Sidebar />}
-      <main className={`${!isAuthPage ? "md:ml-[68px] xl:ml-[275px]" : "w-full"} flex flex-1 min-h-screen pb-16 md:pb-0`}>
+    <div className="flex min-h-screen bg-transparent relative">
+      <div className="hidden md:block w-0 xl:w-[260px] relative z-50">
+        <Sidebar />
+      </div>
+      
+      <main className="flex-1 min-h-screen w-full md:pl-[100px] xl:pl-4 max-w-[1600px] mx-auto pt-4 md:pt-8 pb-24 md:pb-8 px-4 relative z-0">
         {children}
-        {/* Right Sidebar Placeholder - Removed */}
-        {!isAuthPage && (
-             <div className="hidden lg:block w-[350px] pl-8 py-4 border-l border-twitter-border">
-                {/* Empty for now or can be removed entirely if layout allows */}
-             </div>
-        )}
       </main>
-      {!isAuthPage && <BottomNav />}
+      
+      <BottomNav />
     </div>
   );
 }

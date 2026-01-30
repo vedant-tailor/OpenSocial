@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Trash2, MessageCircle, Repeat } from "lucide-react";
+import { Heart, Trash2, MessageCircle, Repeat, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Post = ({ post, onDelete, onLike, onComment }) => {
@@ -33,85 +33,103 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
   });
 
   return (
-    <div className="p-4 border-b border-gray-800 hover:bg-white/5 cursor-pointer transition-colors">
+    <div className="glass-card rounded-2xl p-5 mb-6 hover:bg-slate-800/40 transition-all duration-300 border border-slate-700/30 shadow-lg hover:shadow-violet-500/10 hover:border-violet-500/30 group">
       <div className="flex gap-4">
+        {/* Avatar */}
         <div className="shrink-0">
             <Link to={`/profile/${post.user.username}`}>
-                {post.user.profileImg ? (
-                    <img
-                    src={post.user.profileImg}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover"
-                    />
-                ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center font-bold text-lg text-white">
-                        {post.user.username[0].toUpperCase()}
+                <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-violet-500 to-cyan-400">
+                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
+                        {post.user.profileImg ? (
+                            <img src={post.user.profileImg} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="font-bold text-white">{post.user.username[0].toUpperCase()}</span>
+                        )}
                     </div>
-                )}
+                </div>
             </Link>
         </div>
         
-        <div className="flex-1">
+        {/* Content */}
+        <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start">
-            <Link to={`/profile/${post.user.username}`} className="flex items-center gap-2 group">
-              <span className="font-bold group-hover:underline">
+            <Link to={`/profile/${post.user.username}`} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+              <span className="font-bold text-white hover:text-violet-400 transition-colors">
                 {post.user.username}
               </span>
-              <span className="text-gray-500">@{post.user.username}</span>
-              <span className="text-gray-500">· {formattedDate}</span>
+              <span className="text-slate-500 text-sm">@{post.user.username}</span>
+              <span className="hidden sm:inline text-slate-600">·</span>
+              <span className="text-slate-500 text-sm">{formattedDate}</span>
             </Link>
             
             {isMyPost && (
               <button
                 onClick={handleDelete}
-                className="text-gray-500 hover:text-red-500 transition-colors"
+                className="text-slate-500 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-full transition-all opacity-0 group-hover:opacity-100"
               >
-                <Trash2 size={16} />
+                <Trash2 size={18} />
               </button>
             )}
           </div>
 
-          <p className="mt-1">{post.text}</p>
+          <p className="text-slate-200 text-lg leading-relaxed mb-3 whitespace-pre-wrap">{post.text}</p>
           
           {post.image && (
-            <img src={post.image} alt="Post" className="mt-3 rounded-xl border border-gray-800" />
+            <div className="rounded-xl overflow-hidden border border-slate-700/50 mb-4 bg-black/50">
+                <img src={post.image} alt="Post" className="w-full h-auto max-h-[500px] object-contain" />
+            </div>
           )}
 
-          <div className="flex justify-between mt-4 text-gray-500 max-w-md">
-            <div 
-                className="flex items-center gap-1 hover:text-blue-500 transition-colors group cursor-pointer"
+          {/* Actions */}
+          <div className="flex items-center justify-between mt-4 md:pr-12 border-t border-slate-700/30 pt-3">
+            <button 
                 onClick={() => setShowComments(!showComments)}
+                className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-all group/comment"
             >
-                <MessageCircle size={18} className="group-hover:bg-blue-500/10 rounded-full p-0.5" />
-                <span className="text-sm">{post.comments?.length || 0}</span>
-            </div>
-            <div className="flex items-center gap-1 hover:text-green-500 transition-colors group">
-                <Repeat size={18} className="group-hover:bg-green-500/10 rounded-full p-0.5" />
-            </div>
+                <div className="p-2 rounded-full group-hover/comment:bg-cyan-500/10 transition-colors">
+                    <MessageCircle size={20} />
+                </div>
+                <span className="text-sm font-medium">{post.comments?.length || 0}</span>
+            </button>
+            
+            <button className="flex items-center gap-2 text-slate-400 hover:text-green-400 transition-all group/repost">
+                <div className="p-2 rounded-full group-hover/repost:bg-green-500/10 transition-colors">
+                    <Repeat size={20} />
+                </div>
+            </button>
+            
             <button 
                 onClick={handleLike}
-                className={`flex items-center gap-1 transition-colors group ${isLiked ? "text-pink-600" : "hover:text-pink-600"}`}
+                className={`flex items-center gap-2 transition-all group/like ${isLiked ? "text-pink-500" : "text-slate-400 hover:text-pink-500"}`}
             >
-                <Heart size={18} className={`group-hover:bg-pink-600/10 rounded-full p-0.5 ${isLiked ? "fill-current" : ""}`} />
-                <span className="text-sm">{post.likes?.length || 0}</span>
+                <div className="p-2 rounded-full group-hover/like:bg-pink-500/10 transition-colors">
+                    <Heart size={20} className={`transition-transform duration-300 ${isLiked ? "fill-current scale-110" : "group-hover/like:scale-110"}`} />
+                </div>
+                <span className="text-sm font-medium">{post.likes?.length || 0}</span>
+            </button>
+
+            <button className="flex items-center gap-2 text-slate-400 hover:text-violet-400 transition-all group/share">
+                <div className="p-2 rounded-full group-hover/share:bg-violet-500/10 transition-colors">
+                    <Share2 size={20} />
+                </div>
             </button>
           </div>
 
           {/* Comments Section */}
           {showComments && (
-            <div className="mt-4 border-t border-gray-800 pt-4">
-                <form onSubmit={handleCommentSubmit} className="flex gap-2 mb-4">
+            <div className="mt-4 pt-4 border-t border-slate-700/30 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                <form onSubmit={handleCommentSubmit} className="flex gap-3">
                     <input 
                         type="text" 
-                        placeholder="Tweet your reply" 
-                        className="flex-1 bg-gray-900 border border-gray-800 rounded-full px-4 py-2 outline-none focus:border-blue-500"
+                        placeholder="Post your reply..." 
+                        className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
                     />
                     <button 
                         type="submit" 
-                        className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold hover:bg-blue-600 disabled:opacity-50"
+                        className="bg-violet-600 text-white px-5 py-2 rounded-xl font-medium hover:bg-violet-700 disabled:opacity-50 disabled:hover:bg-violet-600 transition-colors"
                         disabled={!commentText.trim()}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -119,24 +137,24 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
                     </button>
                 </form>
 
-                <div className="space-y-4">
+                <div className="space-y-4 pl-2">
                     {post.comments?.map((comment, index) => (
-                        <div key={index} className="flex gap-3">
-                             <div className="w-8 h-8 rounded-full bg-gray-600 shrink-0 overflow-hidden flex items-center justify-center font-bold text-sm text-white">
+                        <div key={index} className="flex gap-3 group/item">
+                             <div className="w-8 h-8 rounded-full bg-slate-700 shrink-0 overflow-hidden flex items-center justify-center font-bold text-xs text-white">
                                 {comment.postedBy?.profileImg ? (
                                     <img src={comment.postedBy.profileImg} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     comment.postedBy?.username?.[0]?.toUpperCase() || "?"
                                 )}
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold">{comment.postedBy?.username || "Unknown"}</span>
-                                    <span className="text-gray-500 text-xs">
+                            <div className="bg-slate-800/30 p-3 rounded-2xl rounded-tl-none border border-transparent group-hover/item:border-slate-700/50 transition-colors">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-bold text-sm text-white">{comment.postedBy?.username || "Unknown"}</span>
+                                    <span className="text-slate-500 text-xs">
                                         {new Date(comment.created).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-sm">{comment.text}</p>
+                                <p className="text-slate-300 text-sm">{comment.text}</p>
                             </div>
                         </div>
                     ))}
