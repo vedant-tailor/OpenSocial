@@ -129,6 +129,8 @@ const Home = () => {
         }
     };
 
+
+
     return (
         <div className="max-w-2xl mx-auto w-full pb-20">
             {/* Header */}

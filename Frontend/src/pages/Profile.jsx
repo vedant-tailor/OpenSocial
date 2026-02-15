@@ -145,7 +145,7 @@ const Profile = () => {
       }
   };
 
-  const handleComment = async (id, text) => {
+    const handleComment = async (id, text) => {
       try {
           const token = localStorage.getItem("token");
           const res = await axios.post(
@@ -159,6 +159,8 @@ const Profile = () => {
           toast.error("Failed to send reply");
       }
   };
+
+
 
   if (loading) return <div className="text-white text-center mt-20 text-xl font-light tracking-wide">Loading Profile...</div>;
   if (!user) return null;

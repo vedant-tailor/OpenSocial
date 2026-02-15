@@ -1,6 +1,7 @@
 import React from "react";
 import { Heart, Trash2, MessageCircle, Repeat, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const Post = ({ post, onDelete, onLike, onComment }) => {
   const [showComments, setShowComments] = React.useState(false);
@@ -26,6 +27,32 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
       setCommentText("");
     }
   };
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/post/${post._id}`;
+    
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: `${post.user.username}'s Post`,
+                text: post.text,
+                url: shareUrl,
+            });
+            toast.success("Shared successfully");
+        } catch (error) {
+            console.error("Error sharing:", error);
+        }
+    } else {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success("Link copied to clipboard");
+        } catch (error) {
+            toast.error("Failed to copy link");
+        }
+    }
+  };
+
+
 
   const formattedDate = new Date(post.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -92,11 +119,7 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
                 <span className="text-sm font-medium">{post.comments?.length || 0}</span>
             </button>
             
-            <button className="flex items-center gap-2 text-slate-400 hover:text-green-400 transition-all group/repost">
-                <div className="p-2 rounded-full group-hover/repost:bg-green-500/10 transition-colors">
-                    <Repeat size={20} />
-                </div>
-            </button>
+
             
             <button 
                 onClick={handleLike}
@@ -108,7 +131,10 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
                 <span className="text-sm font-medium">{post.likes?.length || 0}</span>
             </button>
 
-            <button className="flex items-center gap-2 text-slate-400 hover:text-violet-400 transition-all group/share">
+            <button 
+                onClick={handleShare}
+                className="flex items-center gap-2 text-slate-400 hover:text-violet-400 transition-all group/share"
+            >
                 <div className="p-2 rounded-full group-hover/share:bg-violet-500/10 transition-colors">
                     <Share2 size={20} />
                 </div>
