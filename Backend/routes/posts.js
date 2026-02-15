@@ -9,6 +9,8 @@ const multer = require("multer");
 // Multer setup for memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+// Configure multer for mixed files
+const cpUpload = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]);
 
 // @route   GET /api/posts
 // @desc    Get all posts
@@ -28,17 +30,19 @@ router.get("/", async (req, res) => {
 // @route   POST /api/posts
 // @desc    Create a post
 // @access  Private
-router.post("/", protect, upload.single("image"), async (req, res) => {
+// @route   POST /api/posts
+// @desc    Create a post
+// @access  Private
+router.post("/", protect, cpUpload, async (req, res) => {
   try {
     const { text } = req.body;
-    let image = req.body.image; // Allow URL if passed directly (though mostly file now)
+    let image = "";
+    let video = "";
 
-    if (!text && !req.file && !image) {
-      return res.status(400).json({ message: "Post must have text or image" });
-    }
-
-    if (req.file) {
-        const uploadToCloudinary = (buffer) => {
+    // Handle Image Upload
+    if (req.files && req.files["image"]) {
+        const imageFile = req.files["image"][0];
+        const uploadImageToCloudinary = (buffer) => {
             return new Promise((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
                     { resource_type: "image" },
@@ -50,14 +54,38 @@ router.post("/", protect, upload.single("image"), async (req, res) => {
                 stream.end(buffer);
             });
         };
-        const result = await uploadToCloudinary(req.file.buffer);
+        const result = await uploadImageToCloudinary(imageFile.buffer);
         image = result.secure_url;
+    }
+
+    // Handle Video Upload
+    if (req.files && req.files["video"]) {
+        const videoFile = req.files["video"][0];
+        const uploadVideoToCloudinary = (buffer) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: "video" },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(buffer);
+            });
+        };
+        const result = await uploadVideoToCloudinary(videoFile.buffer);
+        video = result.secure_url;
+    }
+
+    if (!text && !image && !video) {
+      return res.status(400).json({ message: "Post must have text, image, or video" });
     }
 
     const post = await Post.create({
       user: req.user.id,
       text,
       image,
+      video,
     });
 
     const populatedPost = await Post.findById(post._id).populate(
@@ -136,10 +164,11 @@ router.post("/comment/:id", protect, async (req, res) => {
 // @route   PUT /api/posts/:id
 // @desc    Edit a post
 // @access  Private
-router.put("/:id", protect, upload.single("image"), async (req, res) => {
+router.put("/:id", protect, cpUpload, async (req, res) => {
     try {
         const { text } = req.body;
-        let image = req.body.image; // Can be existing URL or empty if removed
+        let image = req.body.image; 
+        let video = req.body.video;
 
         const post = await Post.findById(req.params.id);
 
@@ -151,7 +180,8 @@ router.put("/:id", protect, upload.single("image"), async (req, res) => {
             return res.status(401).json({ message: "User not authorized" });
         }
 
-        if (req.file) {
+        // Handle Image Update
+        if (req.files && req.files["image"]) {
              const uploadToCloudinary = (buffer) => {
                 return new Promise((resolve, reject) => {
                     const stream = cloudinary.uploader.upload_stream(
@@ -164,17 +194,32 @@ router.put("/:id", protect, upload.single("image"), async (req, res) => {
                     stream.end(buffer);
                 });
             };
-            const result = await uploadToCloudinary(req.file.buffer);
+            const result = await uploadToCloudinary(req.files["image"][0].buffer);
             post.image = result.secure_url;
-        } else if (image === "" || image === null) {
-             // Explicitly removed
+        } else if (image === "") {
              post.image = "";
         }
-        // If image is undefined (not sent), we don't change it. 
-        // But if it is sent as string (existing URL), we technically just keep it.
-        // The check above (image === "") handles removal.
-        // If req.file is NOT present and image is NOT empty string, we assume no change to image OR existing image URL passed back. 
-        // Simplest is: if req.file -> update. If image === "" -> remove. Else -> keep.
+
+        // Handle Video Update
+        if (req.files && req.files["video"]) {
+             const uploadVideoToCloudinary = (buffer) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { resource_type: "video" },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
+                    stream.end(buffer);
+                });
+            };
+            const result = await uploadVideoToCloudinary(req.files["video"][0].buffer);
+            post.video = result.secure_url;
+        } else if (video === "") {
+             post.video = "";
+        }
+
 
         if (text) {
             post.text = text;

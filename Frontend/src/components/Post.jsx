@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Trash2, MessageCircle, Repeat, Share2, Edit2, X, Check, Image, ImageIcon } from "lucide-react";
+import { Heart, Trash2, MessageCircle, Repeat, Share2, Edit2, X, Check, Image, ImageIcon, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -10,9 +10,12 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
   const [editContent, setEditContent] = React.useState(post.text);
   const [editImg, setEditImg] = React.useState(null);
   const [previewUrl, setPreviewUrl] = React.useState(post.image);
+  const [editVideo, setEditVideo] = React.useState(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = React.useState(post.video);
   const [editingCommentId, setEditingCommentId] = React.useState(null);
   const [editCommentContent, setEditCommentContent] = React.useState("");
   const fileInputRef = React.useRef(null);
+  const videoInputRef = React.useRef(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const isMyPost = user?._id === post.user?._id;
@@ -37,8 +40,8 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
   };
 
   const handleEditSubmit = () => {
-    if (editContent.trim() || previewUrl) {
-        onEditPost(post._id, editContent, editImg || previewUrl);
+    if (editContent.trim() || previewUrl || previewVideoUrl) {
+        onEditPost(post._id, editContent, editImg || previewUrl, editVideo || previewVideoUrl);
         setIsEditing(false);
     }
   };
@@ -48,6 +51,20 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
       if (file) {
           setEditImg(file);
           setPreviewUrl(URL.createObjectURL(file));
+          // Clear video if image selected
+          setEditVideo(null);
+          setPreviewVideoUrl("");
+      }
+  };
+
+  const handleVideoChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          setEditVideo(file);
+          setPreviewVideoUrl(URL.createObjectURL(file));
+          // Clear image if video selected
+          setEditImg(null);
+          setPreviewUrl("");
       }
   };
 
@@ -55,6 +72,12 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
       setEditImg(null);
       setPreviewUrl("");
       if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleRemoveVideo = () => {
+      setEditVideo(null);
+      setPreviewVideoUrl("");
+      if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const handleEditCommentSubmit = (commentId) => {
@@ -134,6 +157,8 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
                         setEditContent(post.text);
                         setEditImg(null);
                         setPreviewUrl(post.image);
+                        setEditVideo(null);
+                        setPreviewVideoUrl(post.video);
                     }}
                     className="text-slate-500 hover:text-cyan-400 p-2 hover:bg-cyan-500/10 rounded-full transition-all opacity-0 group-hover:opacity-100"
                   >
@@ -169,6 +194,18 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
                      </div>
                  )}
 
+                 {previewVideoUrl && (
+                     <div className="relative mb-2 rounded-xl overflow-hidden group/preview border border-slate-700/50">
+                         <video src={previewVideoUrl} controls className="w-full max-h-60 object-contain bg-black/50" />
+                         <button
+                            onClick={handleRemoveVideo}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-red-500/80 transition-colors"
+                         >
+                             <X size={16} />
+                         </button>
+                     </div>
+                 )}
+
                  <div className="flex justify-between items-center">
                     <button
                         onClick={() => fileInputRef.current.click()}
@@ -183,6 +220,21 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
                         onChange={handleImageChange}
                         hidden
                         accept="image/*"
+                    />
+
+                    <button
+                        onClick={() => videoInputRef.current.click()}
+                        className="flex items-center gap-2 text-violet-400 hover:text-violet-300 text-sm font-medium px-2 py-1 hover:bg-violet-500/10 rounded-lg transition-colors"
+                    >
+                        <Video size={18} />
+                        <span>{previewVideoUrl ? "Change Video" : "Add Video"}</span>
+                    </button>
+                    <input
+                        type="file"
+                        ref={videoInputRef}
+                        onChange={handleVideoChange}
+                        hidden
+                        accept="video/*"
                     />
 
                      <div className="flex gap-2">
@@ -207,6 +259,11 @@ const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) 
                 {post.image && (
                     <div className="rounded-xl overflow-hidden border border-slate-700/50 mb-4 bg-black/50">
                         <img src={post.image} alt="Post" className="w-full h-auto max-h-[500px] object-contain" />
+                    </div>
+                )}
+                {post.video && (
+                    <div className="rounded-xl overflow-hidden border border-slate-700/50 mb-4 bg-black/50">
+                        <video controls src={post.video} className="w-full h-auto max-h-[500px] object-contain" />
                     </div>
                 )}
              </>

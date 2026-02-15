@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Image, X, Send, Sparkles } from "lucide-react";
+import { Image, X, Send, Sparkles, Video } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import Post from "../components/Post";
@@ -8,8 +8,10 @@ const Home = () => {
     const [posts, setPosts] = useState([]);
     const [text, setText] = useState("");
     const [img, setImg] = useState(null);
+    const [video, setVideo] = useState(null);
     const [loading, setLoading] = useState(true);
     const imgRef = useRef(null);
+    const videoRef = useRef(null);
     const user = JSON.parse(localStorage.getItem("user"));
 
     const fetchPosts = async () => {
@@ -35,6 +37,19 @@ const Home = () => {
                 file,
                 url: URL.createObjectURL(file)
             });
+            setVideo(null); // Clear video if image is selected
+            e.target.value = null;
+        }
+    };
+
+    const handleVideoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setVideo({
+                file,
+                url: URL.createObjectURL(file)
+            });
+            setImg(null); // Clear image if video is selected
             e.target.value = null;
         }
     };
@@ -48,6 +63,9 @@ const Home = () => {
             formData.append("text", text);
             if (img) {
                 formData.append("image", img.file);
+            }
+            if (video) {
+                formData.append("video", video.file);
             }
 
             const res = await axios.post(
@@ -63,6 +81,7 @@ const Home = () => {
             setPosts([res.data, ...posts]);
             setText("");
             setImg(null);
+            setVideo(null);
             toast.success("Shared successfully!");
         } catch (error) {
             console.error(error);
@@ -129,7 +148,7 @@ const Home = () => {
         }
     };
 
-    const handleEditPost = async (id, text, image) => {
+    const handleEditPost = async (id, text, image, video) => {
         try {
             const token = localStorage.getItem("token");
             const formData = new FormData();
@@ -140,6 +159,12 @@ const Home = () => {
             } else if (!image) {
                 // If explicitly removed (or empty), send empty string to signal removal
                 formData.append("image", "");
+            }
+
+            if (video instanceof File) {
+                formData.append("video", video);
+            } else if (!video) {
+                formData.append("video", "");
             }
             // If image is a string (existing URL) and not empty, we don't need to send it 
             // because backend only updates if req.file is present or image is explicitly ""
@@ -226,13 +251,28 @@ const Home = () => {
                             </div>
                         )}
 
+                        {video && (
+                            <div className="relative w-full mb-4 rounded-xl overflow-hidden group/video">
+                                <video src={video.url} controls className="w-full max-h-80 object-cover" />
+                                <button 
+                                    onClick={() => {
+                                        setVideo(null);
+                                        videoRef.current.value = null;
+                                    }}
+                                    className="absolute top-3 right-3 p-2 bg-black/60 backdrop-blur-sm rounded-full text-white opacity-0 group-hover/video:opacity-100 transition-opacity hover:bg-black/80"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+                        )}
+
                         <div className="flex justify-between items-center mt-2 border-t border-slate-700/50 pt-4">
                             <button 
                                 className="text-cyan-400 hover:bg-cyan-400/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
                                 onClick={() => imgRef.current.click()}
                             >
                                 <Image size={22} />
-                                <span className="text-sm font-medium">Add Photo</span>
+                                <span className="text-sm font-medium">Photo</span>
                             </button>
                             <input 
                                 type="file" 
@@ -240,6 +280,21 @@ const Home = () => {
                                 ref={imgRef} 
                                 accept="image/*"
                                 onChange={handleImgChange}
+                            />
+
+                            <button 
+                                className="text-violet-400 hover:bg-violet-400/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
+                                onClick={() => videoRef.current.click()}
+                            >
+                                <Video size={22} />
+                                <span className="text-sm font-medium">Video</span>
+                            </button>
+                            <input 
+                                type="file" 
+                                hidden 
+                                ref={videoRef} 
+                                accept="video/*"
+                                onChange={handleVideoChange}
                             />
                             
                             <button 

@@ -160,7 +160,7 @@ const Profile = () => {
       }
   };
 
-  const handleEditPost = async (id, text, image) => {
+  const handleEditPost = async (id, text, image, video) => {
       try {
           const token = localStorage.getItem("token");
           const formData = new FormData();
@@ -170,6 +170,12 @@ const Profile = () => {
               formData.append("image", image);
           } else if (!image) {
               formData.append("image", "");
+          }
+
+          if (video instanceof File) {
+              formData.append("video", video);
+          } else if (!video) {
+              formData.append("video", "");
           }
 
           const res = await axios.put(
