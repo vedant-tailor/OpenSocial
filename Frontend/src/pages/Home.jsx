@@ -129,6 +129,55 @@ const Home = () => {
         }
     };
 
+    const handleEditPost = async (id, text, image) => {
+        try {
+            const token = localStorage.getItem("token");
+            const formData = new FormData();
+            formData.append("text", text);
+            
+            if (image instanceof File) {
+                formData.append("image", image);
+            } else if (!image) {
+                // If explicitly removed (or empty), send empty string to signal removal
+                formData.append("image", "");
+            }
+            // If image is a string (existing URL) and not empty, we don't need to send it 
+            // because backend only updates if req.file is present or image is explicitly ""
+
+            const res = await axios.put(
+                `http://localhost:8001/api/posts/${id}`,
+                formData,
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data"
+                    } 
+                }
+            );
+            setPosts(posts.map(post => post._id === id ? res.data : post));
+            toast.success("Post updated");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update post");
+        }
+    };
+
+    const handleEditComment = async (postId, commentId, text) => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.put(
+                `http://localhost:8001/api/posts/comment/${postId}/${commentId}`,
+                { text },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setPosts(posts.map(post => post._id === postId ? res.data : post));
+            toast.success("Comment updated");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update comment");
+        }
+    };
+
 
 
     return (
@@ -220,6 +269,8 @@ const Home = () => {
                                 onLike={handleLikePost} 
                                 onDelete={handleDeletePost} 
                                 onComment={handleComment}
+                                onEditPost={handleEditPost}
+                                onEditComment={handleEditComment}
                             />
                         </div>
                     ))

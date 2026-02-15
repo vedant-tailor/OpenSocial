@@ -133,6 +133,104 @@ router.post("/comment/:id", protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/posts/:id
+// @desc    Edit a post
+// @access  Private
+router.put("/:id", protect, upload.single("image"), async (req, res) => {
+    try {
+        const { text } = req.body;
+        let image = req.body.image; // Can be existing URL or empty if removed
+
+        const post = await Post.findById(req.params.id);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        if (post.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: "User not authorized" });
+        }
+
+        if (req.file) {
+             const uploadToCloudinary = (buffer) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { resource_type: "image" },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
+                    stream.end(buffer);
+                });
+            };
+            const result = await uploadToCloudinary(req.file.buffer);
+            post.image = result.secure_url;
+        } else if (image === "" || image === null) {
+             // Explicitly removed
+             post.image = "";
+        }
+        // If image is undefined (not sent), we don't change it. 
+        // But if it is sent as string (existing URL), we technically just keep it.
+        // The check above (image === "") handles removal.
+        // If req.file is NOT present and image is NOT empty string, we assume no change to image OR existing image URL passed back. 
+        // Simplest is: if req.file -> update. If image === "" -> remove. Else -> keep.
+
+        if (text) {
+            post.text = text;
+        }
+
+        await post.save();
+
+        const populatedPost = await Post.findById(req.params.id)
+            .populate("user", "username profileImg")
+            .populate("comments.postedBy", "username profileImg");
+
+        res.status(200).json(populatedPost);
+    } catch (err) {
+        console.error("Error in update post:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @route   PUT /api/posts/comment/:id/:commentId
+// @desc    Edit a comment
+// @access  Private
+router.put("/comment/:id/:commentId", protect, async (req, res) => {
+    try {
+        const { text } = req.body;
+        const post = await Post.findById(req.params.id);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const comment = post.comments.id(req.params.commentId);
+
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+
+        if (comment.postedBy.toString() !== req.user.id) {
+            return res.status(401).json({ message: "User not authorized" });
+        }
+
+        if (text) {
+            comment.text = text;
+        }
+
+        await post.save();
+
+        const populatedPost = await Post.findById(req.params.id)
+            .populate("user", "username profileImg")
+            .populate("comments.postedBy", "username profileImg");
+
+        res.status(200).json(populatedPost);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // @route   DELETE /api/posts/:id
 // @desc    Delete a post
 // @access  Private

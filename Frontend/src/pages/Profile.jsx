@@ -160,6 +160,50 @@ const Profile = () => {
       }
   };
 
+  const handleEditPost = async (id, text, image) => {
+      try {
+          const token = localStorage.getItem("token");
+          const formData = new FormData();
+          formData.append("text", text);
+          
+          if (image instanceof File) {
+              formData.append("image", image);
+          } else if (!image) {
+              formData.append("image", "");
+          }
+
+          const res = await axios.put(
+              `http://localhost:8001/api/posts/${id}`,
+              formData,
+              { 
+                  headers: { 
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "multipart/form-data"
+                  } 
+              }
+          );
+          setPosts(posts.map(post => post._id === id ? res.data : post));
+          toast.success("Post updated");
+      } catch (error) {
+          toast.error("Failed to update post");
+      }
+  };
+
+  const handleEditComment = async (postId, commentId, text) => {
+      try {
+          const token = localStorage.getItem("token");
+          const res = await axios.put(
+              `http://localhost:8001/api/posts/comment/${postId}/${commentId}`,
+              { text },
+              { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setPosts(posts.map(post => post._id === postId ? res.data : post));
+          toast.success("Comment updated");
+      } catch (error) {
+          toast.error("Failed to update comment");
+      }
+  };
+
 
 
   if (loading) return <div className="text-white text-center mt-20 text-xl font-light tracking-wide">Loading Profile...</div>;
@@ -319,6 +363,8 @@ const Profile = () => {
                         onLike={handleLikePost}
                         onDelete={handleDeletePost}
                         onComment={handleComment}
+                        onEditPost={handleEditPost}
+                        onEditComment={handleEditComment}
                     />
                 </div>
             ))

@@ -1,11 +1,19 @@
 import React from "react";
-import { Heart, Trash2, MessageCircle, Repeat, Share2 } from "lucide-react";
+import { Heart, Trash2, MessageCircle, Repeat, Share2, Edit2, X, Check, Image, ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-const Post = ({ post, onDelete, onLike, onComment }) => {
+const Post = ({ post, onDelete, onLike, onComment, onEditPost, onEditComment }) => {
   const [showComments, setShowComments] = React.useState(false);
   const [commentText, setCommentText] = React.useState("");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editContent, setEditContent] = React.useState(post.text);
+  const [editImg, setEditImg] = React.useState(null);
+  const [previewUrl, setPreviewUrl] = React.useState(post.image);
+  const [editingCommentId, setEditingCommentId] = React.useState(null);
+  const [editCommentContent, setEditCommentContent] = React.useState("");
+  const fileInputRef = React.useRef(null);
+
   const user = JSON.parse(localStorage.getItem("user"));
   const isMyPost = user?._id === post.user?._id;
   const isLiked = post.likes.includes(user?._id);
@@ -26,6 +34,35 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
       onComment(post._id, commentText);
       setCommentText("");
     }
+  };
+
+  const handleEditSubmit = () => {
+    if (editContent.trim() || previewUrl) {
+        onEditPost(post._id, editContent, editImg || previewUrl);
+        setIsEditing(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          setEditImg(file);
+          setPreviewUrl(URL.createObjectURL(file));
+      }
+  };
+
+  const handleRemoveImage = () => {
+      setEditImg(null);
+      setPreviewUrl("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleEditCommentSubmit = (commentId) => {
+      if (editCommentContent.trim()) {
+          onEditComment(post._id, commentId, editCommentContent);
+          setEditingCommentId(null);
+          setEditCommentContent("");
+      }
   };
 
   const handleShare = async () => {
@@ -90,21 +127,89 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
             </Link>
             
             {isMyPost && (
-              <button
-                onClick={handleDelete}
-                className="text-slate-500 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-full transition-all opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex gap-2">
+                 <button
+                    onClick={() => {
+                        setIsEditing(!isEditing);
+                        setEditContent(post.text);
+                        setEditImg(null);
+                        setPreviewUrl(post.image);
+                    }}
+                    className="text-slate-500 hover:text-cyan-400 p-2 hover:bg-cyan-500/10 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="text-slate-500 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+              </div>
             )}
           </div>
 
-          <p className="text-slate-200 text-lg leading-relaxed mb-3 whitespace-pre-wrap">{post.text}</p>
-          
-          {post.image && (
-            <div className="rounded-xl overflow-hidden border border-slate-700/50 mb-4 bg-black/50">
-                <img src={post.image} alt="Post" className="w-full h-auto max-h-[500px] object-contain" />
-            </div>
+          {isEditing ? (
+             <div className="mb-3">
+                 <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-slate-200 focus:outline-none focus:border-violet-500 resize-none min-h-[100px] mb-2"
+                 />
+                 
+                 {previewUrl && (
+                     <div className="relative mb-2 rounded-xl overflow-hidden group/preview border border-slate-700/50">
+                         <img src={previewUrl} alt="Preview" className="w-full max-h-60 object-contain bg-black/50" />
+                         <button
+                            onClick={handleRemoveImage}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-red-500/80 transition-colors"
+                         >
+                             <X size={16} />
+                         </button>
+                     </div>
+                 )}
+
+                 <div className="flex justify-between items-center">
+                    <button
+                        onClick={() => fileInputRef.current.click()}
+                        className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 text-sm font-medium px-2 py-1 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                    >
+                        <ImageIcon size={18} />
+                        <span>{previewUrl ? "Change Photo" : "Add Photo"}</span>
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        hidden
+                        accept="image/*"
+                    />
+
+                     <div className="flex gap-2">
+                         <button
+                            onClick={() => setIsEditing(false)}
+                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full transition-colors"
+                         >
+                            <X size={20} />
+                         </button>
+                         <button
+                             onClick={handleEditSubmit}
+                             className="p-2 text-green-400 hover:bg-green-500/10 rounded-full transition-colors"
+                         >
+                             <Check size={20} />
+                         </button>
+                     </div>
+                 </div>
+             </div>
+          ) : (
+             <>
+                <p className="text-slate-200 text-lg leading-relaxed mb-3 whitespace-pre-wrap">{post.text}</p>
+                {post.image && (
+                    <div className="rounded-xl overflow-hidden border border-slate-700/50 mb-4 bg-black/50">
+                        <img src={post.image} alt="Post" className="w-full h-auto max-h-[500px] object-contain" />
+                    </div>
+                )}
+             </>
           )}
 
           {/* Actions */}
@@ -180,7 +285,46 @@ const Post = ({ post, onDelete, onLike, onComment }) => {
                                         {new Date(comment.created).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-slate-300 text-sm">{comment.text}</p>
+                                {editingCommentId === comment._id ? (
+                                     <div className="flex-1">
+                                         <input
+                                            type="text"
+                                            value={editCommentContent}
+                                            onChange={(e) => setEditCommentContent(e.target.value)}
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-1 text-slate-200 focus:outline-none focus:border-violet-500 text-sm mb-2"
+                                         />
+                                         <div className="flex justify-end gap-2">
+                                             <button
+                                                onClick={() => setEditingCommentId(null)}
+                                                className="text-slate-400 hover:text-white text-xs"
+                                             >
+                                                Cancel
+                                             </button>
+                                             <button
+                                                onClick={() => handleEditCommentSubmit(comment._id)}
+                                                className="text-violet-400 hover:text-violet-300 text-xs font-semibold"
+                                             >
+                                                Save
+                                             </button>
+                                         </div>
+                                     </div>
+                                ) : (
+                                    <div className="flex-1">
+                                        <p className="text-slate-300 text-sm">{comment.text}</p>
+                                    </div>
+                                )}
+                                
+                                {user?._id === comment.postedBy?._id && !editingCommentId && (
+                                    <button
+                                        onClick={() => {
+                                            setEditingCommentId(comment._id);
+                                            setEditCommentContent(comment.text);
+                                        }}
+                                        className="text-slate-500 hover:text-cyan-400 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                    >
+                                        <Edit2 size={14} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
