@@ -4,6 +4,7 @@ import BottomNav from "./components/BottomNav";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Search from "./pages/Search";
 import { Toaster } from "react-hot-toast";
 
 function Layout({ children }) {
@@ -35,6 +36,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/search" element={<Search />} />
             <Route path="/profile/:username" element={<Profile />} />
           </Routes>
         </Layout>

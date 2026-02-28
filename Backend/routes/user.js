@@ -123,4 +123,24 @@ router.post("/unfollow/:id", protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/users/search
+// @desc    Search for users by username
+// @access  Private
+router.get("/search", protect, async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const users = await User.find({
+      username: { $regex: query, $options: "i" },
+    }).select("-password");
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

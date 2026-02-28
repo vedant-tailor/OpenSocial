@@ -1,6 +1,6 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Home, User, LogOut, LogIn, PenSquare } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, User, LogOut, LogIn, PenSquare, Search } from "lucide-react";
 
 const Sidebar = () => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -13,8 +13,19 @@ const Sidebar = () => {
         window.location.href = "/auth";
     };
 
+    const navigate = useNavigate();
+
+    const handleNewPost = () => {
+        if (location.pathname === "/") {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            navigate("/");
+        }
+    };
+
     const navItems = [
         { icon: <Home size={24} />, text: "Home", path: "/" },
+        { icon: <Search size={24} />, text: "Search", path: "/search" },
         { icon: <User size={24} />, text: "Profile", path: `/profile/${user?.username || "me"}` },
     ];
 
@@ -50,7 +61,7 @@ const Sidebar = () => {
                 ))}
 
                 {/* Post Button */}
-                <button className="mt-6 mx-auto xl:mx-0 xl:w-full btn-primary p-3 xl:py-3 xl:px-6 rounded-xl shadow-lg flex justify-center items-center group">
+                <button onClick={handleNewPost} className="mt-6 mx-auto xl:mx-0 xl:w-full btn-primary p-3 xl:py-3 xl:px-6 rounded-xl shadow-lg flex justify-center items-center group">
                     <PenSquare size={24} className="xl:mr-2 group-hover:rotate-12 transition-transform" />
                     <span className="hidden xl:block font-semibold">New Post</span>
                 </button>
@@ -78,7 +89,7 @@ const Sidebar = () => {
 
                 {/* Mini Profile */}
                 {isAuthenticated && (
-                    <div className="mt-6 pt-6 border-t border-slate-700/50 flex items-center justify-center xl:justify-start gap-3">
+                    <Link to={`/profile/${user.username}`} className="mt-6 pt-6 border-t border-slate-700/50 flex items-center justify-center xl:justify-start gap-3 hover:opacity-80 transition-opacity cursor-pointer w-full">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 p-[2px]">
                             <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
                                 {user.profileImg ? (
@@ -92,7 +103,7 @@ const Sidebar = () => {
                             <p className="font-bold text-sm text-white truncate">{user.username}</p>
                             <p className="text-xs text-slate-500 truncate">@{user.username}</p>
                         </div>
-                    </div>
+                    </Link>
                 )}
             </div>
         </div>
