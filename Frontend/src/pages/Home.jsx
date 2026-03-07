@@ -209,8 +209,8 @@ const Home = () => {
         <div className="max-w-2xl mx-auto w-full pb-20">
             {/* Header */}
             <div className="mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                <Sparkles className="text-violet-400" size={28} />
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Discover</h2>
+                <Sparkles className="text-violet-600 dark:text-violet-400" size={28} />
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Discover</h2>
             </div>
 
             {/* Create Post Card */}
@@ -219,11 +219,11 @@ const Home = () => {
                 
                 <div className="flex gap-4 relative z-10">
                     <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-violet-500 to-cyan-500 shrink-0">
-                        <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
                              {user?.profileImg ? (
                                 <img src={user.profileImg} alt="Profile" className="w-full h-full object-cover" />
                              ) : (
-                                <span className="font-bold text-white">{user?.username?.[0]?.toUpperCase()}</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{user?.username?.[0]?.toUpperCase()}</span>
                              )}
                         </div>
                     </div>
@@ -231,7 +231,7 @@ const Home = () => {
                     <div className="flex-1">
                         <textarea
                             placeholder="Share your thoughts..."
-                            className="w-full bg-transparent text-lg outline-none placeholder-slate-500 text-white resize-none min-h-[80px]"
+                            className="w-full bg-transparent text-lg outline-none placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white resize-none min-h-[80px]"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                         />
@@ -268,7 +268,7 @@ const Home = () => {
 
                         <div className="flex justify-between items-center mt-2 border-t border-slate-700/50 pt-4">
                             <button 
-                                className="text-cyan-400 hover:bg-cyan-400/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
+                                className="text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
                                 onClick={() => imgRef.current.click()}
                             >
                                 <Image size={22} />
@@ -283,7 +283,7 @@ const Home = () => {
                             />
 
                             <button 
-                                className="text-violet-400 hover:bg-violet-400/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
+                                className="text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 p-2.5 rounded-xl transition-all flex items-center gap-2"
                                 onClick={() => videoRef.current.click()}
                             >
                                 <Video size={22} />

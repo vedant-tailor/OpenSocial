@@ -39,53 +39,52 @@ const Auth = () => {
                         <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-cyan-400 mb-6 drop-shadow-lg">
                             OpenSocial
                         </h1>
-                        <p className="text-lg text-slate-300">
+                        <p className="text-lg text-slate-700 dark:text-slate-300">
                             Connect, share, and inspire in a beautiful new dimension.
                         </p>
                     </div>
                 </div>
 
                 {/* Right Side - Form */}
-                <div className="p-8 md:p-12 flex flex-col justify-center bg-slate-900/40 backdrop-blur-md">
+                <div className="p-8 md:p-12 flex flex-col justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
                     <div className="max-w-md mx-auto w-full">
-                        <h2 className="text-3xl font-bold mb-2 text-white">
+                        <h2 className="text-3xl font-bold mb-2 text-slate-900 dark:text-white">
                             {isLogin ? "Welcome Back" : "Join the Community"}
                         </h2>
-                        <p className="text-slate-400 mb-8">
+                        <p className="text-slate-600 dark:text-slate-400 mb-8">
                             {isLogin ? "Enter your details to access your account" : "Start your journey with us today"}
                         </p>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             {!isLogin && (
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1">Username</label>
+                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Username</label>
                                     <input
                                         type="text"
                                         placeholder="johndoe"
-                                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                                        className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         onChange={(e) => setUsername(e.target.value)}
                                         required
                                     />
                                 </div>
                             )}
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1">Email Address</label>
+                                                        <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Email Address</label>
                                 <input
                                     type="email"
                                     placeholder="john@example.com"
-                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                                    className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1">Password</label>
+                             <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Password</label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
-                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+                                    className="w-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
@@ -99,8 +98,8 @@ const Auth = () => {
                             </button>
                         </form>
 
-                        <div className="mt-8 text-center">
-                            <p className="text-slate-400">
+                         <div className="mt-8 text-center">
+                            <p className="text-slate-600 dark:text-slate-400">
                                 {isLogin ? "Don't have an account?" : "Already have an account?"}
                                 <button
                                     className="ml-2 text-violet-400 hover:text-violet-300 font-medium transition-colors"

@@ -20,6 +20,28 @@ router.get("/profile/:username", async (req, res) => {
     }
 });
 
+// @route GET /api/users/:username/followers
+router.get("/:username/followers", async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username }).populate("followers", "username profileImg _id");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user.followers);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+// @route GET /api/users/:username/following
+router.get("/:username/following", async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username }).populate("following", "username profileImg _id");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user.following);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
 // @route PUT /api/users/update
 router.put("/update", protect, upload.fields([{ name: "profileImg" }, { name: "coverImg" }]), async (req, res) => {
     try {

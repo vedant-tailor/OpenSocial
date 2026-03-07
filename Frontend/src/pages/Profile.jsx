@@ -5,6 +5,7 @@ import { Calendar, ArrowLeft, MapPin, Link as LinkIcon, Edit3 } from "lucide-rea
 import { toast } from "react-hot-toast";
 import EditProfileModal from "../components/EditProfileModal";
 import Post from "../components/Post";
+import FollowListModal from "../components/FollowListModal";
 
 const Profile = () => {
   const { username } = useParams();
@@ -17,6 +18,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [feedType, setFeedType] = useState("posts");
+  const [followModalConfig, setFollowModalConfig] = useState({ isOpen: false, type: "" });
 
   useEffect(() => {
     const fetchUserAndPosts = async () => {
@@ -212,7 +214,7 @@ const Profile = () => {
 
 
 
-  if (loading) return <div className="text-white text-center mt-20 text-xl font-light tracking-wide">Loading Profile...</div>;
+  if (loading) return <div className="text-slate-900 dark:text-white text-center mt-20 text-xl font-light tracking-wide">Loading Profile...</div>;
   if (!user) return null;
 
   const isMyProfile = currentUser && currentUser.username === user.username;
@@ -229,15 +231,15 @@ const Profile = () => {
   return (
     <div className="max-w-4xl mx-auto w-full pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-20 backdrop-blur-xl bg-slate-900/60 border-b border-white/5 px-6 py-4 flex items-center gap-4 transition-all duration-300">
+      <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 dark:bg-slate-900/60 border-b border-slate-200 dark:border-white/5 px-6 py-4 flex items-center gap-4 transition-all duration-300">
         <button 
             onClick={() => navigate(-1)} 
-            className="p-2 hover:bg-white/10 rounded-full transition-colors group"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-colors group"
         >
-            <ArrowLeft className="text-slate-400 group-hover:text-white transition-colors" size={20} />
+            <ArrowLeft className="text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" size={20} />
         </button>
         <div>
-            <h2 className="font-bold text-xl text-white leading-tight">{user.username}</h2>
+            <h2 className="font-bold text-xl text-slate-900 dark:text-white leading-tight">{user.username}</h2>
             <p className="text-slate-500 text-sm font-medium">
                 {posts.filter(post => post.user._id === user._id).length} posts
             </p>
@@ -246,7 +248,7 @@ const Profile = () => {
 
       {/* Banner */}
       <div className="h-60 relative group overflow-hidden rounded-b-3xl">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/80 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-100/80 dark:to-slate-900/80 z-10"></div>
         {user.coverImg ? (
             <img src={user.coverImg} alt="Cover" className="w-full h-full object-cover" />
         ) : (
@@ -259,12 +261,12 @@ const Profile = () => {
         <div className="flex justify-between items-end">
              {/* Avatar */}
             <div className="relative group">
-                <div className="w-36 h-36 rounded-full p-1.5 bg-slate-900">
-                    <div className="w-full h-full rounded-full bg-slate-800 overflow-hidden border-4 border-slate-900 shadow-2xl">
+                <div className="w-36 h-36 rounded-full p-1.5 bg-slate-100 dark:bg-slate-900">
+                    <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border-4 border-slate-100 dark:border-slate-900 shadow-2xl">
                         {user.profileImg ? (
                             <img src={user.profileImg} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-slate-500 bg-slate-800">
+                            <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-slate-500 bg-slate-200 dark:bg-slate-800">
                                 {user.username[0].toUpperCase()}
                             </div>
                         )}
@@ -277,7 +279,7 @@ const Profile = () => {
                 {isMyProfile ? (
                     <button 
                         onClick={() => setIsEditModalOpen(true)}
-                        className="glass-panel hover:bg-white/10 text-white font-semibold px-6 py-2.5 rounded-full transition-all border border-white/10 flex items-center gap-2"
+                        className="glass-panel text-slate-900 dark:text-white font-semibold px-6 py-2.5 rounded-full transition-all flex items-center gap-2"
                     >
                         <Edit3 size={16} />
                         <span>Edit Profile</span>
@@ -287,7 +289,7 @@ const Profile = () => {
                         onClick={handleFollow}
                         className={`font-bold px-8 py-2.5 rounded-full transition-all shadow-lg ${
                             isFollowing 
-                                ? "bg-transparent border border-slate-600 text-white hover:bg-red-500/10 hover:border-red-500 hover:text-red-400" 
+                                ? "bg-transparent border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 dark:hover:text-red-400" 
                                 : "btn-primary text-white"
                         }`}
                     >
@@ -299,12 +301,12 @@ const Profile = () => {
 
         <div className="mt-4 space-y-3">
             <div>
-                <h1 className="text-3xl font-bold text-white">{user.username}</h1>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{user.username}</h1>
                 <p className="text-slate-500 font-medium">@{user.username}</p>
             </div>
             
             {user.bio && (
-                <p className="text-slate-300 text-lg leading-relaxed max-w-2xl">{user.bio}</p>
+                <p className="text-slate-700 dark:text-slate-300 text-lg leading-relaxed max-w-2xl">{user.bio}</p>
             )}
 
             <div className="flex items-center gap-6 text-slate-400 text-sm">
@@ -314,7 +316,7 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center gap-1.5">
                     <LinkIcon size={16} />
-                    <span className="text-violet-400 hover:underline cursor-pointer">opensocial.com</span>
+                    <span className="text-violet-600 dark:text-violet-400 hover:underline cursor-pointer">opensocial.com</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <Calendar size={16} />
@@ -323,27 +325,33 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-6 pt-2">
-                <div className="flex items-center gap-1.5 group cursor-pointer">
-                    <span className="text-white font-bold text-lg">{user.following.length}</span>
-                    <span className="text-slate-500 group-hover:text-violet-400 transition-colors">Following</span>
+                <div 
+                    className="flex items-center gap-1.5 group cursor-pointer"
+                    onClick={() => setFollowModalConfig({ isOpen: true, type: "following" })}
+                >
+                    <span className="text-slate-900 dark:text-white font-bold text-lg">{user.following.length}</span>
+                    <span className="text-slate-500 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">Following</span>
                 </div>
-                <div className="flex items-center gap-1.5 group cursor-pointer">
-                    <span className="text-white font-bold text-lg">{followersCount}</span>
-                    <span className="text-slate-500 group-hover:text-cyan-400 transition-colors">Followers</span>
+                <div 
+                    className="flex items-center gap-1.5 group cursor-pointer"
+                    onClick={() => setFollowModalConfig({ isOpen: true, type: "followers" })}
+                >
+                    <span className="text-slate-900 dark:text-white font-bold text-lg">{followersCount}</span>
+                    <span className="text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">Followers</span>
                 </div>
             </div>
         </div>
       </div>
       
       {/* Tabs */}
-      <div className="flex border-b border-white/5 sticky top-[73px] bg-slate-900/95 backdrop-blur z-20 mb-6">
+      <div className="flex border-b border-slate-200 dark:border-white/5 sticky top-[73px] bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur z-20 mb-6">
         {["posts", "replies", "likes"].map((tab) => (
             <div 
                 key={tab}
                 className="flex-1 text-center py-4 cursor-pointer relative group"
                 onClick={() => setFeedType(tab)}
             >
-                <span className={`font-medium transition-colors capitalized ${feedType === tab ? "text-white" : "text-slate-500 group-hover:text-slate-300"}`}>
+                <span className={`font-medium transition-colors capitalized ${feedType === tab ? "text-slate-900 dark:text-white" : "text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"}`}>
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </span>
                 {feedType === tab && (
@@ -382,6 +390,13 @@ const Profile = () => {
         onClose={() => setIsEditModalOpen(false)}
         user={user}
         onSave={handleUpdateProfile}
+      />
+
+      <FollowListModal
+        isOpen={followModalConfig.isOpen}
+        onClose={() => setFollowModalConfig({ isOpen: false, type: "" })}
+        username={user.username}
+        type={followModalConfig.type}
       />
     </div>
   );

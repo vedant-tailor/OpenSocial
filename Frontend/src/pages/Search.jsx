@@ -45,8 +45,8 @@ const Search = () => {
         <div className="max-w-2xl mx-auto w-full pb-20">
             {/* Header */}
             <div className="mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                <SearchIcon className="text-violet-400" size={28} />
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Search Users</h2>
+                <SearchIcon className="text-violet-600 dark:text-violet-400" size={28} />
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Search Users</h2>
             </div>
 
             {/* Search Bar */}
@@ -56,7 +56,7 @@ const Search = () => {
                     <input
                         type="text"
                         placeholder="Search by username..."
-                        className="w-full bg-transparent text-lg outline-none placeholder-slate-500 text-white"
+                        className="w-full bg-transparent text-lg outline-none placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         autoFocus
@@ -79,25 +79,25 @@ const Search = () => {
                         <Link 
                             to={`/profile/${user.username}`} 
                             key={user._id} 
-                            className="glass-panel p-4 rounded-2xl flex items-center justify-between hover:bg-slate-800/50 transition-colors animate-in fade-in slide-in-from-bottom-4 duration-700"
+                            className="glass-panel p-4 rounded-2xl flex items-center justify-between hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors animate-in fade-in slide-in-from-bottom-4 duration-700"
                             style={{ animationDelay: `${index * 50}ms` }}
                         >
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-br from-violet-500 to-cyan-500 shrink-0">
-                                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
+                                    <div className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
                                         {user.profileImg ? (
                                             <img src={user.profileImg} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="font-bold text-white uppercase">{user.username[0]}</span>
+                                            <span className="font-bold text-slate-900 dark:text-white uppercase">{user.username[0]}</span>
                                         )}
                                     </div>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg text-white">{user.username}</h3>
+                                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">{user.username}</h3>
                                     <p className="text-sm text-slate-500">@{user.username}</p>
                                 </div>
                             </div>
-                            <div className="text-violet-400 bg-violet-500/10 px-4 py-2 rounded-xl text-sm font-semibold">
+                            <div className="text-violet-600 dark:text-violet-400 bg-violet-500/10 px-4 py-2 rounded-xl text-sm font-semibold">
                                 View Profile
                             </div>
                         </Link>

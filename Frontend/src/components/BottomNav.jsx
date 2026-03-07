@@ -1,11 +1,13 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Search, PlusSquare, User, LogIn } from "lucide-react";
+import { Home, Search, PlusSquare, User, LogIn, Sun, Moon } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
 const BottomNav = () => {
     const location = useLocation();
     const user = JSON.parse(localStorage.getItem("user"));
     const isAuthenticated = !!user;
+    const { theme, toggleTheme } = useTheme();
 
     const navigate = useNavigate();
 
@@ -21,6 +23,7 @@ const BottomNav = () => {
         { icon: <Home size={24} />, path: "/" },
         { icon: <Search size={24} />, path: "/search" },
         { icon: <PlusSquare size={24} />, action: handleNewPost },
+        { icon: theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />, action: toggleTheme },
         { icon: <User size={24} />, path: `/profile/${user?.username || "me"}` },
     ];
 
@@ -36,7 +39,7 @@ const BottomNav = () => {
                         <button 
                             key={index} 
                             onClick={item.action}
-                            className="relative p-2 transition-all duration-300 text-slate-400 hover:text-white"
+                            className="relative p-2 transition-all duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         >
                             {item.icon}
                         </button>
@@ -48,7 +51,7 @@ const BottomNav = () => {
                         key={index} 
                         to={item.path} 
                         className={`relative p-2 transition-all duration-300
-                        ${active ? "text-violet-400 -translate-y-1" : "text-slate-400 hover:text-white"}`}
+                        ${active ? "text-violet-600 dark:text-violet-400 -translate-y-1" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}
                     >
                         {item.icon}
                         {active && (
@@ -58,7 +61,7 @@ const BottomNav = () => {
                 );
             })}
              {!isAuthenticated && (
-                <Link to="/auth" className="text-slate-400 hover:text-violet-400 transition-colors">
+                <Link to="/auth" className="text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                     <LogIn size={24} />
                 </Link>
              )}
