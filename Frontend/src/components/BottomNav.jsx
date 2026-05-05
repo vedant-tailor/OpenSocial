@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Search, PlusSquare, User, LogIn, Sun, Moon } from "lucide-react";
+import { Home, Search, PlusSquare, User, LogIn, Sun, Moon, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
 const BottomNav = () => {
@@ -24,6 +24,7 @@ const BottomNav = () => {
         { icon: <Search size={24} />, path: "/search" },
         { icon: <PlusSquare size={24} />, action: handleNewPost },
         { icon: theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />, action: toggleTheme },
+        ...(user?.isAdmin ? [{ icon: <Shield size={24} />, path: "/admin" }] : []),
         { icon: <User size={24} />, path: `/profile/${user?.username || "me"}` },
     ];
 

@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
+import Admin from "./pages/Admin";
 import { Toaster } from "react-hot-toast";
 
 function Layout({ children }) {
@@ -38,6 +39,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/search" element={<Search />} />
             <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </Layout>
     </Router>

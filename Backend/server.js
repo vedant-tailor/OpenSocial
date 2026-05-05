@@ -32,6 +32,7 @@ if (!mongoURI) {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/user"));
 app.use("/api/posts", require("./routes/posts"));
+app.use("/api/admin", require("./routes/admin"));
 
 app.get("/", (req, res) => {
   res.send("OpenSocial Backend is running");

@@ -42,6 +42,7 @@ router.post("/register", async (req, res) => {
         profileImg: user.profileImg,
         coverImg: user.coverImg,
         bio: user.bio,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {
@@ -71,6 +72,7 @@ router.post("/login", async (req, res) => {
         profileImg: user.profileImg,
         coverImg: user.coverImg,
         bio: user.bio,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {

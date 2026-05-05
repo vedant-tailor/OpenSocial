@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, User, LogOut, LogIn, PenSquare, Search, Sun, Moon } from "lucide-react";
+import { Home, User, LogOut, LogIn, PenSquare, Search, Sun, Moon, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
 const Sidebar = () => {
@@ -29,6 +29,7 @@ const Sidebar = () => {
         { icon: <Home size={24} />, text: "Home", path: "/" },
         { icon: <Search size={24} />, text: "Search", path: "/search" },
         { icon: <User size={24} />, text: "Profile", path: `/profile/${user?.username || "me"}` },
+        ...(user?.isAdmin ? [{ icon: <Shield size={24} />, text: "Admin Panel", path: "/admin" }] : []),
     ];
 
     const isActive = (path) => location.pathname === path;
